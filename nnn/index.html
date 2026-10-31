@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>NNN Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0b0d12;--card:#151821;--card2:#1c2030;--line:#262b3b;--txt:#eef1f8;--mut:#8a91a8;
+  --acc:#7c5cff;--acc2:#22d3ee;--good:#22c55e;--bad:#ef4444;--warn:#f59e0b;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(84px + env(safe-area-inset-bottom));min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:18px 16px}
+h1{font-size:22px;font-weight:800;letter-spacing:-.02em}
+h2{font-size:15px;font-weight:700;margin-bottom:12px}
+.sub{color:var(--mut);font-size:13px}
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.pill{font-size:12px;font-weight:600;padding:6px 10px;border-radius:999px;background:var(--card2);color:var(--mut);border:1px solid var(--line)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px;margin-bottom:14px}
+.hero{text-align:center;padding:26px 18px;background:radial-gradient(120% 100% at 50% 0%,#2a2060 0%,var(--card) 60%)}
+.ring{position:relative;width:210px;height:210px;margin:0 auto 14px}
+.ring svg{transform:rotate(-90deg)}
+.ring .in{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.big{font-size:56px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.timer{font-variant-numeric:tabular-nums;font-size:15px;color:var(--acc2);font-weight:600;margin-top:6px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card2);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-size:22px;font-weight:800}
+.stat span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.06em}
+.btn{display:block;width:100%;border:0;border-radius:14px;padding:15px;font:600 15px Inter,sans-serif;color:#fff;cursor:pointer;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.b-acc{background:linear-gradient(135deg,var(--acc),#a855f7)}
+.b-panic{background:linear-gradient(135deg,#f97316,var(--bad));font-size:17px;padding:18px;box-shadow:0 8px 30px -8px #ef444488}
+.b-ghost{background:var(--card2);border:1px solid var(--line);color:var(--txt)}
+.b-bad{background:transparent;border:1px solid #ef444466;color:#fca5a5}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.mt{margin-top:10px}
+.moods{display:flex;justify-content:space-between;margin:6px 0 14px}
+.moods button{font-size:28px;background:var(--card2);border:2px solid transparent;border-radius:14px;width:18%;aspect-ratio:1;cursor:pointer}
+.moods button.on{border-color:var(--acc);background:#2a2060}
+label{font-size:13px;color:var(--mut);display:block;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--acc)}
+textarea,input[type=text]{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;color:var(--txt);padding:12px;font:14px Inter,sans-serif;resize:none}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.cal .h{font-size:11px;color:var(--mut);text-align:center;padding-bottom:4px}
+.d{aspect-ratio:1;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;position:relative;cursor:pointer;border:1px solid transparent}
+.d.clean{background:#14532d;color:#bbf7d0}
+.d.rel{background:#7f1d1d;color:#fecaca}
+.d.today{border-color:var(--acc2)}
+.d.fut{opacity:.35}
+.d .dot{position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--acc2)}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.badges{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.bdg{background:var(--card2);border-radius:16px;padding:14px 8px;text-align:center;filter:grayscale(1);opacity:.4}
+.bdg.on{filter:none;opacity:1;background:linear-gradient(160deg,#2a2060,var(--card2))}
+.bdg .e{font-size:32px}.bdg b{display:block;font-size:12px;margin-top:6px}.bdg span{font-size:10px;color:var(--mut)}
+.bars{display:flex;align-items:flex-end;gap:3px;height:110px;margin-top:6px}
+.bars div{flex:1;border-radius:4px 4px 0 0;background:var(--acc);min-height:2px}
+.sq{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line)}
+.sq:last-child{border:0}
+.sq .n{font-weight:600}.sq .s{font-size:12px}
+.tag{font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;cursor:pointer;border:0}
+.tag.in{background:#14532d;color:#bbf7d0}.tag.out{background:#7f1d1d;color:#fecaca}
+.x{background:none;border:0;color:var(--mut);font-size:18px;margin-left:8px;cursor:pointer}
+.quote{font-size:15px;line-height:1.5;font-style:italic;color:#d6d9e6}
+.quote small{display:block;margin-top:8px;font-style:normal;color:var(--mut);font-size:12px}
+nav{position:fixed;bottom:0;left:0;right:0;background:#0b0d12ee;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:5}
+nav button{background:none;border:0;color:var(--mut);font:600 10px Inter,sans-serif;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 10px}
+nav button .i{font-size:20px}
+nav button.on{color:var(--txt)}
+.view{display:none}.view.on{display:block;animation:f .25s}
+@keyframes f{from{opacity:0;transform:translateY(6px)}}
+.ov{position:fixed;inset:0;background:#05060acc;backdrop-filter:blur(8px);z-index:10;display:none;align-items:flex-end;justify-content:center}
+.ov.on{display:flex}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:24px 24px 0 0;width:100%;max-width:520px;padding:22px 18px calc(22px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto;animation:up .25s}
+@keyframes up{from{transform:translateY(40px);opacity:0}}
+.breath{width:170px;height:170px;margin:18px auto;border-radius:50%;background:radial-gradient(circle,var(--acc2),var(--acc));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;transition:transform 4s ease-in-out;transform:scale(.6);box-shadow:0 0 60px -10px var(--acc2)}
+.chal{background:var(--card2);border-radius:14px;padding:14px;text-align:center;font-weight:600;margin:10px 0}
+.toast{position:fixed;top:calc(16px + env(safe-area-inset-top));left:50%;transform:translateX(-50%) translateY(-120px);background:var(--card2);border:1px solid var(--line);padding:12px 18px;border-radius:14px;font-weight:600;font-size:14px;z-index:20;transition:transform .3s}
+.toast.on{transform:translateX(-50%) translateY(0)}
+.done{color:var(--good);font-weight:700;text-align:center;padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div><h1>NNN 2026</h1><div class="sub" id="greet">No Nut November</div></div>
+    <div class="pill" id="dayPill">Day –</div>
+  </div>
+
+  <!-- HOME -->
+  <section class="view on" id="v-home">
+    <div class="card hero">
+      <div class="ring">
+        <svg width="210" height="210"><circle cx="105" cy="105" r="92" stroke="#262b3b" stroke-width="14" fill="none"/>
+        <circle id="ringArc" cx="105" cy="105" r="92" stroke="url(#g)" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="578" style="transition:stroke-dashoffset .8s"/>
+        <defs><linearGradient id="g"><stop offset="0" stop-color="#7c5cff"/><stop offset="1" stop-color="#22d3ee"/></linearGradient></defs></svg>
+        <div class="in"><div class="sub" id="ringLbl">current streak</div><div class="big" id="streakDays">0</div><div class="sub">days</div><div class="timer" id="timer">00:00:00</div></div>
+      </div>
+      <div class="sub" id="heroMsg"></div>
+    </div>
+
+    <button class="btn b-panic" id="panicBtn">🚨 Urge hitting? Tap here</button>
+
+    <div class="grid3 mt" style="margin-bottom:14px">
+      <div class="stat"><b id="sLong">0</b><span>Best streak</span></div>
+      <div class="stat"><b id="sBeat">0</b><span>Urges beaten</span></div>
+      <div class="stat"><b id="sLeft">30</b><span>Days left</span></div>
+    </div>
+
+    <div class="card" id="checkCard">
+      <h2>Daily check-in</h2>
+      <div id="checkBody">
+        <label>How are you feeling?</label>
+        <div class="moods" id="moods"></div>
+        <label>Urge level today: <b id="urgeVal">0</b>/10</label>
+        <input type="range" min="0" max="10" value="0" id="urge">
+        <label class="mt">Journal (optional)</label>
+        <textarea id="note" rows="3" placeholder="What helped today? What triggered you?"></textarea>
+        <button class="btn b-acc mt" id="checkBtn">✓ I stayed strong today</button>
+      </div>
+    </div>
+
+    <div class="card"><div class="quote" id="quote"></div></div>
+
+    <button class="btn b-bad" id="relapseBtn">I slipped — reset streak</button>
+  </section>
+
+  <!-- CALENDAR -->
+  <section class="view" id="v-cal">
+    <div class="card">
+      <h2>November 2026</h2>
+      <div class="cal" id="cal"></div>
+      <div class="legend"><span><i style="background:#14532d"></i>Clean</span><span><i style="background:#7f1d1d"></i>Slipped</span><span><i style="background:var(--acc2);border-radius:50%"></i>Journaled</span></div>
+    </div>
+    <div class="card" id="dayDetail"><div class="sub">Tap a day to see its log.</div></div>
+  </section>
+
+  <!-- STATS -->
+  <section class="view" id="v-stats">
+    <div class="grid3" style="margin-bottom:14px">
+      <div class="stat"><b id="tClean">0</b><span>Clean days</span></div>
+      <div class="stat"><b id="tRel">0</b><span>Slips</span></div>
+      <div class="stat"><b id="tRate">–</b><span>Success</span></div>
+      <div class="stat"><b id="tMood">–</b><span>Avg mood</span></div>
+      <div class="stat"><b id="tUrge">–</b><span>Avg urge</span></div>
+      <div class="stat"><b id="tCheck">0</b><span>Check-ins</span></div>
+    </div>
+    <div class="card"><h2>Urge level by day</h2><div class="bars" id="urgeBars"></div><div class="sub mt">Spot your danger days.</div></div>
+    <div class="card"><h2>Mood by day</h2><div class="bars" id="moodBars"></div></div>
+    <div class="card"><h2>Projected finish</h2><div class="sub" id="proj"></div></div>
+  </section>
+
+  <!-- BADGES -->
+  <section class="view" id="v-badges">
+    <div class="card"><h2>Achievements</h2><div class="badges" id="badges"></div></div>
+  </section>
+
+  <!-- SQUAD -->
+  <section class="view" id="v-squad">
+    <div class="card">
+      <h2>Squad — who's still in?</h2>
+      <div class="row"><input type="text" id="sqName" placeholder="Friend's name" maxlength="20"><button class="btn b-acc" style="flex:0 0 80px" id="sqAdd">Add</button></div>
+      <div id="sqList" class="mt"></div>
+    </div>
+    <div class="card">
+      <h2>Settings</h2>
+      <button class="btn b-ghost" id="copyBtn">Copy my progress summary</button>
+      <button class="btn b-bad mt" id="wipeBtn">Erase all data</button>
+      <div class="sub mt">Data is saved on this device only.</div>
+    </div>
+  </section>
+</div>
+
+<nav>
+  <button class="on" data-v="home"><span class="i">🔥</span>Home</button>
+  <button data-v="cal"><span class="i">📅</span>Calendar</button>
+  <button data-v="stats"><span class="i">📊</span>Stats</button>
+  <button data-v="badges"><span class="i">🏆</span>Badges</button>
+  <button data-v="squad"><span class="i">👥</span>Squad</button>
+</nav>
+
+<!-- PANIC SHEET -->
+<div class="ov" id="panicOv"><div class="sheet">
+  <h2 style="text-align:center;font-size:20px">You've got this. Breathe.</h2>
+  <div class="breath" id="breath">Breathe in</div>
+  <div class="sub" style="text-align:center">Urges peak and pass in about 15 minutes.</div>
+  <div class="chal" id="chal"></div>
+  <div class="row"><button class="btn b-ghost" id="newChal">Another task</button><button class="btn b-acc" id="beatBtn">💪 I beat it</button></div>
+  <button class="btn b-ghost mt" id="closePanic">Close</button>
+</div></div>
+
+<!-- CONFIRM SHEET -->
+<div class="ov" id="confOv"><div class="sheet">
+  <h2 style="font-size:19px" id="confT"></h2>
+  <div class="sub" id="confM" style="margin-bottom:16px;line-height:1.5"></div>
+  <div class="row"><button class="btn b-ghost" id="confNo">Cancel</button><button class="btn b-bad" id="confYes" style="background:var(--bad);color:#fff;border:0">Confirm</button></div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const DAY=864e5, START=new Date(2026,10,1).getTime(), END=new Date(2026,11,1).getTime();
+const KEY='nnn2026';
+const MOODS=['😩','😕','😐','🙂','😎'];
+const QUOTES=[
+ ["Discipline is choosing between what you want now and what you want most.","Abraham Lincoln (attributed)"],
+ ["We suffer more often in imagination than in reality.","Seneca"],
+ ["You have power over your mind — not outside events. Realize this, and you will find strength.","Marcus Aurelius"],
+ ["The successful warrior is the average man, with laser-like focus.","Bruce Lee"],
+ ["Hard choices, easy life. Easy choices, hard life.","Jerzy Gregorek"],
+ ["Self-control is strength. Calmness is mastery.","Proverb"],
+ ["Don't count the days. Make the days count.","Muhammad Ali"],
+ ["The urge is temporary. The regret isn't.","NNN wisdom"],
+ ["What you do every day matters more than what you do once in a while.","Gretchen Rubin"],
+ ["First we make our habits, then our habits make us.","John Dryden (attributed)"]
+];
+const TASKS=["Drop and do 25 push-ups right now","Take a 2-minute cold shower","Go for a 10-minute walk outside","Drink a full glass of cold water","Text a friend and start a conversation","Do 50 jumping jacks","Leave the room you're in","Put your phone down for 10 minutes","Do a 60-second plank","Write down 3 goals for December","Clean something for 5 minutes","Play one round of a game with a friend"];
+const BADGES=[
+ [1,'🌱','Day One','Survive 1 day'],[3,'🔥','On Fire','3-day streak'],[7,'⚔️','One Week','7-day streak'],
+ [10,'🛡️','Iron Will','10-day streak'],[14,'🧠','Mind Over','14-day streak'],[21,'🦁','Beast Mode','21-day streak'],
+ [30,'👑','Legend','Complete NNN'],['u5','💪','Urge Slayer','Beat 5 urges'],['u25','🥷','Untouchable','Beat 25 urges'],
+ ['c5','📓','Reflective','5 check-ins'],['c15','✍️','Journalist','15 check-ins'],['s','👥','Squad Up','Add a friend']
+];
+
+let S=load();
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s)return s}catch(e){}return{relapses:[],days:{},beaten:0,squad:[]}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const $=id=>document.getElementById(id);
+const key=t=>{const d=new Date(t);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const midnight=t=>{const d=new Date(t);d.setHours(0,0,0,0);return d.getTime()};
+const pad=n=>String(n).padStart(2,'0');
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2200)}
+function confirmBox(title,msg,yes){$('confT').textContent=title;$('confM').textContent=msg;$('confOv').classList.add('on');$('confYes').onclick=()=>{$('confOv').classList.remove('on');yes()}}
+$('confNo').onclick=()=>$('confOv').classList.remove('on');
+
+function lastReset(){const r=S.relapses.filter(x=>x>=START);return Math.max(START,r.length?Math.max(...r):START)}
+function streakMs(now){return now<START?0:Math.max(0,Math.min(now,END)-lastReset())}
+function longest(now){
+  if(now<START)return 0;
+  const pts=[START,...S.relapses.filter(x=>x>=START&&x<END).sort((a,b)=>a-b),Math.min(now,END)];
+  let m=0;for(let i=1;i<pts.length;i++)m=Math.max(m,pts[i]-pts[i-1]);return Math.floor(m/DAY);
+}
+function dayNum(now){return now<START?0:Math.min(30,Math.floor((now-START)/DAY)+1)}
+function relapseOn(k){return S.relapses.some(r=>key(r)===k)}
+
+function tick(){
+  const now=Date.now();
+  if(now<START){
+    const ms=START-now,h=Math.floor(ms/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+    $('ringLbl').textContent='starts in';$('streakDays').textContent=Math.floor(ms/DAY);
+    $('timer').textContent=pad(h%24)+':'+pad(m)+':'+pad(s);
+    $('dayPill').textContent='Starts Nov 1';$('heroMsg').textContent='Lock in. The challenge begins at midnight.';
+    $('ringArc').style.strokeDashoffset=578;return;
+  }
+  const ms=streakMs(now),d=Math.floor(ms/DAY),h=Math.floor(ms%DAY/36e5),m=Math.floor(ms%36e5/6e4),s=Math.floor(ms%6e4/1e3);
+  $('ringLbl').textContent=now>=END?'final streak':'current streak';
+  $('streakDays').textContent=d;$('timer').textContent=pad(h)+':'+pad(m)+':'+pad(s);
+  const dn=dayNum(now);$('dayPill').textContent=now>=END?'Complete':'Day '+dn+' / 30';
+  $('ringArc').style.strokeDashoffset=578*(1-Math.min(1,ms/(30*DAY)));
+  $('heroMsg').textContent=now>=END?(S.relapses.filter(r=>r>=START).length?'NNN is over. You fought the whole month.':'👑 You completed No Nut November. Legend.'):
+    d>=21?'Elite territory. Finish it.':d>=14?'Halfway monster. Keep going.':d>=7?'A full week. Momentum is yours.':d>=3?'Building momentum.':'Every hour counts. Stay locked in.';
+}
+
+function renderHome(){
+  const now=Date.now();
+  $('sLong').textContent=longest(now);$('sBeat').textContent=S.beaten;
+  $('sLeft').textContent=now<START?30:Math.max(0,Math.ceil((END-now)/DAY));
+  const q=QUOTES[Math.floor(now/DAY)%QUOTES.length];$('quote').innerHTML=`“${q[0]}”<small>— ${q[1]}</small>`;
+  const k=key(now),log=S.days[k];
+  if(now<START||now>=END){$('checkCard').style.display='none';return}
+  $('checkCard').style.display='';
+  if(log&&log.checked){
+    $('checkBody').innerHTML=`<div class="done">✓ Checked in today ${MOODS[log.mood-1]||''}</div><div class="sub" style="text-align:center">Come back tomorrow. Urge level logged: ${log.urge}/10</div>`;
+  }
+}
+let mood=0;
+function buildMoods(){$('moods').innerHTML=MOODS.map((e,i)=>`<button data-m="${i+1}">${e}</button>`).join('');
+  $('moods').onclick=e=>{const b=e.target.closest('button');if(!b)return;mood=+b.dataset.m;[...$('moods').children].forEach(c=>c.classList.toggle('on',c===b))}}
+$('urge').oninput=e=>$('urgeVal').textContent=e.target.value;
+$('checkBtn').onclick=()=>{
+  if(!mood){toast('Pick a mood first');return}
+  const k=key(Date.now());S.days[k]={...(S.days[k]||{}),checked:true,mood,urge:+$('urge').value,note:$('note').value.trim()};
+  save();toast('Checked in. Stay strong 🔥');renderAll();
+};
+
+function renderCal(){
+  const now=Date.now(),tk=key(now);let h=['M','T','W','T','F','S','S'].map(x=>`<div class="h">${x}</div>`).join('');
+  const off=(new Date(START).getDay()+6)%7;for(let i=0;i<off;i++)h+='<div></div>';
+  for(let i=0;i<30;i++){
+    const t=START+i*DAY+3600e3,k=key(t),log=S.days[k];let c='d';
+    if(relapseOn(k))c+=' rel';else if(midnight(t)<midnight(now))c+=' clean';else if(k===tk&&log&&log.checked)c+=' clean';
+    if(k===tk)c+=' today';if(midnight(t)>midnight(now))c+=' fut';
+    h+=`<div class="${c}" data-k="${k}">${i+1}${log&&log.note?'<span class="dot"></span>':''}</div>`;
+  }
+  $('cal').innerHTML=h;
+}
+$('cal').onclick=e=>{
+  const d=e.target.closest('.d');if(!d)return;const k=d.dataset.k,log=S.days[k],day=+k.slice(-2);
+  const rel=S.relapses.filter(r=>key(r)===k);
+  $('dayDetail').innerHTML=`<h2>November ${day}</h2>`+
+   (rel.length?`<div class="sub" style="color:#fca5a5">Slipped at ${rel.map(r=>new Date(r).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'})).join(', ')}</div>`:'')+
+   (log&&log.checked?`<div class="sub mt">Mood: ${MOODS[log.mood-1]} &nbsp; Urge: ${log.urge}/10</div>${log.note?`<div class="quote mt" style="font-style:normal">${esc(log.note)}</div>`:''}`:'<div class="sub mt">No check-in logged.</div>');
+};
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+function renderStats(){
+  const now=Date.now(),dn=dayNum(now),rels=S.relapses.filter(r=>r>=START&&r<END);
+  const relDays=new Set(rels.map(key));let clean=0;
+  for(let i=0;i<dn;i++){const t=START+i*DAY+3600e3;if(!relDays.has(key(t))&&midnight(t)<midnight(now))clean++}
+  const logs=Object.values(S.days).filter(l=>l.checked);
+  $('tClean').textContent=clean;$('tRel').textContent=rels.length;
+  const past=Math.max(0,Math.min(30,Math.floor((Math.min(now,END)-START)/DAY)));
+  $('tRate').textContent=past?Math.round(clean/past*100)+'%':'–';
+  $('tMood').textContent=logs.length?MOODS[Math.round(logs.reduce((a,l)=>a+l.mood,0)/logs.length)-1]:'–';
+  $('tUrge').textContent=logs.length?(logs.reduce((a,l)=>a+l.urge,0)/logs.length).toFixed(1):'–';
+  $('tCheck').textContent=logs.length;
+  let ub='',mb='';
+  for(let i=0;i<30;i++){const l=S.days[key(START+i*DAY+3600e3)];
+    ub+=`<div style="height:${l&&l.checked?l.urge*10:0}%;background:${l&&l.urge>=7?'var(--bad)':l&&l.urge>=4?'var(--warn)':'var(--good)'}"></div>`;
+    mb+=`<div style="height:${l&&l.checked?l.mood*20:0}%"></div>`}
+  $('urgeBars').innerHTML=ub;$('moodBars').innerHTML=mb;
+  const sd=Math.floor(streakMs(now)/DAY),left=Math.max(0,Math.ceil((END-Math.max(now,START))/DAY));
+  $('proj').innerHTML=now>=END?`Finished with a best streak of <b>${longest(now)}</b> days.`:
+    `If you stay clean from here, you'll finish with a <b>${sd+left}-day</b> streak and ${clean+left} clean days total.`;
+}
+
+function renderBadges(){
+  const now=Date.now(),lg=Math.max(longest(now),Math.floor(streakMs(now)/DAY)),checks=Object.values(S.days).filter(l=>l.checked).length;
+  $('badges').innerHTML=BADGES.map(([r,e,n,d])=>{
+    let on=typeof r==='number'?lg>=r:r[0]==='u'?S.beaten>=+r.slice(1):r[0]==='c'?checks>=+r.slice(1):S.squad.length>0;
+    return `<div class="bdg ${on?'on':''}"><div class="e">${e}</div><b>${n}</b><span>${d}</span></div>`}).join('');
+}
+
+function renderSquad(){
+  $('sqList').innerHTML=S.squad.length?S.squad.map((f,i)=>`<div class="sq"><div><div class="n">${esc(f.name)}</div><div class="s sub">${f.out?'Out on Nov '+f.outDay:'Still standing'}</div></div><div><button class="tag ${f.out?'out':'in'}" data-i="${i}">${f.out?'OUT':'IN'}</button><button class="x" data-del="${i}">×</button></div></div>`).join('')
+   :'<div class="sub">Add the friends doing NNN with you and track who falls first.</div>';
+}
+$('sqAdd').onclick=()=>{const n=$('sqName').value.trim();if(!n)return;S.squad.push({name:n,out:false});$('sqName').value='';save();renderAll();toast(n+' joined the squad')};
+$('sqName').onkeydown=e=>{if(e.key==='Enter')$('sqAdd').click()};
+$('sqList').onclick=e=>{const t=e.target;
+  if(t.dataset.i!=null){const f=S.squad[+t.dataset.i];f.out=!f.out;f.outDay=Math.max(1,dayNum(Date.now()));save();renderAll();if(f.out)toast('💀 '+f.name+' is out')}
+  if(t.dataset.del!=null){S.squad.splice(+t.dataset.del,1);save();renderAll()}};
+
+// panic
+let bt;
+function newTask(){$('chal').textContent='👉 '+TASKS[Math.floor(Math.random()*TASKS.length)]}
+function breathe(){const b=$('breath');let inn=true;const step=()=>{b.style.transform=inn?'scale(1)':'scale(.6)';b.textContent=inn?'Breathe in':'Breathe out';inn=!inn};step();bt=setInterval(step,4000)}
+$('panicBtn').onclick=()=>{$('panicOv').classList.add('on');newTask();breathe()};
+$('newChal').onclick=newTask;
+function closePanic(){$('panicOv').classList.remove('on');clearInterval(bt);$('breath').style.transform='scale(.6)'}
+$('closePanic').onclick=closePanic;
+$('beatBtn').onclick=()=>{S.beaten++;save();closePanic();renderAll();toast('Urge defeated 💪 Total: '+S.beaten)};
+
+$('relapseBtn').onclick=()=>{
+  if(Date.now()<START){toast("The challenge hasn't started yet");return}
+  confirmBox('Reset your streak?','No shame — it happens. Your history and stats stay. Your current streak goes back to zero and you start again right now.',()=>{
+    S.relapses.push(Date.now());save();renderAll();toast('Streak reset. Get back up 🔁')})};
+$('wipeBtn').onclick=()=>confirmBox('Erase everything?','This deletes all check-ins, slips, badges and squad data on this device.',()=>{S={relapses:[],days:{},beaten:0,squad:[]};save();location.reload()});
+$('copyBtn').onclick=async()=>{
+  const now=Date.now(),txt=`NNN 2026 — Day ${dayNum(now)}/30\n🔥 Current streak: ${Math.floor(streakMs(now)/DAY)} days\n🏆 Best: ${longest(now)} days\n💪 Urges beaten: ${S.beaten}`;
+  try{await navigator.clipboard.writeText(txt);toast('Copied — send it to the squad')}catch(e){toast('Copy not allowed here')}};
+
+document.querySelector('nav').onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+b.dataset.v));scrollTo(0,0)};
+
+function renderAll(){renderHome();renderCal();renderStats();renderBadges();renderSquad();tick()}
+buildMoods();renderAll();setInterval(tick,1000);
+</script>
+</body>
+</html>
